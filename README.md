@@ -302,6 +302,14 @@ e1a9434 Промежуточная редакция 2
 
 ## 8. Статусы файлов в репозитории
 
+```mermaid
+flowchart TD
+	A[untracked] -- git add --> B[staged + tracked];
+	B -- git commit --> C[tracked];
+	C -- Изменения --> D[modified];
+	D -- git add --> B;
+	B -- Изменения --> D;
+```
 
 ## 9. Оформление сообщений к коммитам
 

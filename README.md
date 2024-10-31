@@ -346,7 +346,7 @@ flowchart TD
 Вы не увидите это состояние в выводе команды `git status` — 
 иначе она бы каждый раз выводила список вообще всех файлов проекта.
 
-В итоге 'git status' показывает только следующие состояния файлов:
+В итоге `git status` показывает только следующие состояния файлов:
 - `staged` (`Changes to be committed` в выводе `git status`),
 - `modified` (`Changes not staged for commit`),
 - `untracked` (`Untracked files`).
@@ -361,7 +361,7 @@ On branch master
 nothing to commit, working tree clean  
 ```
 
-- найдены 'untracked'-файлы — есть файлы, не добавленные в репозиторий через `git add`, в выводе появится
+- найдены `untracked`-файлы — есть файлы, не добавленные в репозиторий через `git add`, в выводе появится
 
 ```
 $ touch fileA.txt

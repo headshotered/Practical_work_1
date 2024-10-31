@@ -302,14 +302,108 @@ e1a9434 Промежуточная редакция 2
 
 ## 8. Статусы файлов в репозитории
 
+Одна из ключевых задач Git — отслеживать изменения файлов в репозитории. 
+Для этого каждый файл помечается каким-либо статусом. Рассмотрим основные.
+- `untracked` (англ. «неотслеживаемый»). Новые файлы в Git-репозитории помечаются как `untracked`, 
+то есть неотслеживаемые. Git «видит», что такой файл существует, но не следит за изменениями в нём. 
+У `untracked`-файла нет предыдущих версий, зафиксированных в коммитах или через команду `git add`.
+- `staged` (англ. «подготовленный»). После выполнения команды `git add` файл попадает в staging area 
+(от англ. _stage_ — «сцена», «этап [процесса]» и _area_ — «область»), то есть в список файлов, 
+которые войдут в коммит. В этот момент файл находится в состоянии `staged`.
+`Staging area` также называют **index** (англ. «каталог») или **cache** (англ. «кеш»), 
+а состояние файла `staged` иногда называют `indexed` или `cached`.
+- `tracked` (англ. «отслеживаемый») -- это противоположность `untracked`. 
+Оно довольно широкое по смыслу: в него попадают файлы, которые уже были зафиксированы с помощью `git commit`, 
+а также файлы, которые были добавлены в **staging area** командой `git add`. 
+То есть все файлы, в которых Git так или иначе отслеживает изменения.
+- `modified` (англ. «изменённый») -- это состояние, которое присваивается файлу, 
+когда Git сравнил его содержимое с последней сохранённой версией и нашёл отличия. 
+Например, файл был закоммичен и после этого изменён.
+
+Типичный жизненный цикл файла представлен на графе ниже.
+
 ```mermaid
 flowchart TD
-	A[untracked] -- git add --> B[staged + tracked];
-	B -- git commit --> C[tracked];
-	C -- Изменения --> D[modified];
-	D -- git add --> B;
-	B -- Изменения --> D;
+	A[untracked] -- "git add" --> B[staged + tracked];
+	B -- "git commit" --> C[tracked];
+	C -- "Изменения" --> D[modified];
+	D -- "git add" --> B;
+	B -- "Изменения" --> D;
 ```
+
+Данный граф постоен при помощи формата [Mermaid](https://github.blog/developer-skills/github/include-diagrams-markdown-files-mermaid/). 
+
+**Важный момент**, который **не удалось** указать на графе!
+Если файл находится в состоянии `staged + tracked`, и в него вносятся изменения, 
+то к нему **прибавляется** статус `modified`, остальнае статусы **сохраняются**. Далее возможно следующее:
+- если вызвать команду `git add`, то статус `modified` удалится, а при коммите запишется новая версия этого файла,
+- если вызвать команду `git commit`, то статусом будет тот же `tracked` и 
+"закомитится" версия файла **до изменений**.
+
+Определять статус файлов из репозитория позволяет уже знакомая нам команда `git status`.
+Большинство файлов в типичном проекте будут находиться в состоянии `tracked` 
+(то есть закоммичены и не изменены после коммита). 
+Вы не увидите это состояние в выводе команды `git status` -- 
+иначе она бы каждый раз выводила список вообще всех файлов проекта.
+
+В итоге 'git status' показывает только следующие состояния файлов:
+- `staged` (`Changes to be committed` в выводе `git status`),
+- `modified` (`Changes not staged for commit`),
+- `untracked` (`Untracked files`).
+
+Типичные варианты вывода `git status`:
+- нет ни `staged`-, ни `modified`-, ни `untracked`-файлов -- в репозитории нет новых или измененных файлов,
+выводом будет
+
+```
+$ git status
+On branch master
+nothing to commit, working tree clean  
+```
+
+- найдены 'untracked'-файлы -- есть файлы, не добавленные в репозиторий через `git add`, в выводе появится
+
+```
+$ touch fileA.txt
+$ git status
+On branch master
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        fileA.txt
+
+nothing added to commit but untracked files present (use "git add" to track)
+```  
+
+- найдены `modified`-файлы -- имеются измененные файлы, которые ещё не добавлены в staging area после этого,
+вывод будет иметь вид
+
+```
+$ git status 
+On branch master
+Changes not staged for commit: # ещё одна секция
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   fileA.txt
+```
+
+- файл добавлен в staging area, но после этого изменен -- наиболее интересный случай, 
+описанный ранее в **важном моменте**. Конкретный пример такого случая:
+
+```
+$ git status
+On branch master
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+          modified:   fileA.txt
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+          modified:   fileA.txt
+```
+
+Этот случай описывался ранее. Чтобы закоммитить самую свежую версию файла, 
+нужно снова выполнить `git add` перед коммитом.
 
 ## 9. Оформление сообщений к коммитам
 
